@@ -6,7 +6,8 @@ import cv2 as cv
 import hr_calculator
 
 freqs_min = 0.8
-freqs_max = 1.8
+#freqs_max = 1.8
+freqs_max = 4
 
 def get_hr(ROI, fps):
     signal_handler = Handler(ROI)
@@ -24,7 +25,8 @@ def get_hr(ROI, fps):
 face_cascade = cv.CascadeClassifier(cv.data.haarcascades + 'haarcascade_frontalface_default.xml')
 eye_cascade = cv.CascadeClassifier(cv.data.haarcascades + 'haarcascade_eye.xml')
 
-cap = cv.VideoCapture(0)
+#cap = cv.VideoCapture(0)
+cap = cv.VideoCapture('pei_reposo.mp4')
 fps = cap.get(cv.CAP_PROP_FPS)
 ROI = []
 
@@ -32,24 +34,16 @@ while 1:
     ret, img = cap.read()
     img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(img_gray, 1.3, 5)
-    for (x,y,w,h) in faces:
-    #for face in faces:
-        # left = face.left()
-        # right = face.right()
-        # top = face.top()
-        # bottom = face.bottom()
-        # h = bottom - top
-        # w = right - left
-        # roi = frame[top + h // 10 * 2:top + h // 10 * 7, left + w // 9 * 2:left + w // 9 * 8]
-        # cv.rectangle(frame, (left + w // 9 * 2, top + h // 10 * 3), (left + w // 9 * 8, top + h // 10 * 7),
-        #              color=(0, 0, 255))
-        # cv.rectangle(frame, (left, top), (left + w, top + h), color=(0, 0, 255))
-        
+    for (x,y,w,h) in faces:        
         roi_gray = img_gray[y+h // 10*2 : y+h // 10*7, x+w // 9*2 : x+w // 9*8]
-        roi_color = img[y+h // 10*2 : y+h // 10*7, x+w // 9*2 : x+w // 9*8]
-        cv.rectangle(img,(x + w // 9 * 2, y + h // 10 * 3),(x + w // 9 * 8, y + h // 10 * 7),(255,0,0),2)
         
-
+        roi_color = img[y+h//3 : y+h//3*2, x + w//4 : x+w//4*3]
+        cv.rectangle(img,(x + w//4, y +h//2),(x +w//4*3, y +h//3*2),(255,0,0),2)
+        
+        """ ROI DE LA FRENTE
+        roi_color = img[y : y+h//3, x + w//4 : x+w//4*3] 
+        cv.rectangle(img,(x+ w//4, y),(x+w//4*3, y + h//3),(255,0,0),2)  """
+    
         ROI.append(roi_color)
         if len(ROI) == 300:
             heartrate = get_hr(ROI, fps)
