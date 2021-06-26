@@ -14,17 +14,21 @@ class Handler:
         red = []
         for roi in self.ROI:
             b, g, r = cv.split(roi)
-            b = np.mean(np.sum(b)) / np.std(b)
+            b = np.mean(b)
+            g = np.mean(g) 
+            r = np.mean(r)
+            
+            """ b = np.mean(np.sum(b)) / np.std(b)
             g = np.mean(np.sum(g)) / np.std(g)
-            r = np.mean(np.sum(r)) / np.std(r)
+            r = np.mean(np.sum(r)) / np.std(r) """
             blue.append(b)
             green.append(g)
             red.append(r)
         return blue, green, red
 
-    def ICA(self, matrix, n_component, max_iter=200):
+    def ICA(self, matrix, n_component, max_iter=400, tol=0.0005):
         matrix = matrix.T
-        ica = FastICA(n_components=n_component, max_iter=max_iter)
+        ica = FastICA(n_components=n_component, max_iter=max_iter, tol=tol)
         u = ica.fit_transform(matrix)
         return u.T
 
