@@ -6,7 +6,7 @@ import dlib
 import cv2 as cv
 import hr_calculator
 from LE import LE
-from sklearn.manifold import SpectralEmbedding
+
 import time
 from face_detection import FaceDetection
 from process import Process
@@ -23,7 +23,6 @@ def get_hr(ROI, fps):
 
     # matrix = np.vstack((blue,green,red))
     # matrix = matrix.T
-    # #component = signal_handler.ICA(matrix, 3)
     # #component = LE(matrix, dim = 1, k = 3, graph = 'k-nearest', weights = 'heat kernel', sigma = 5, laplacian = 'symmetrized')
     # embedding = SpectralEmbedding(n_components=1)
     # Y = embedding.fit_transform(matrix)
@@ -60,7 +59,7 @@ if __name__ == '__main__':
         Process.run()
 
         print(np.mean(Process.bpms))
-        
+
         frame = Process.frame_out #get the frame to show in GUI
         f_fr = Process.frame_ROI #get the face to show in GUI
 
