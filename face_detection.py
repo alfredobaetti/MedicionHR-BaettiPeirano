@@ -60,7 +60,7 @@ class FaceDetection(object):
             if(face_frame.shape[:2][1] != 0):
                 face_frame = imutils.resize(face_frame,width=256)
                 
-            face_frame = self.fa.align(frame,gray,rects[0]) # align face
+            #face_frame = self.fa.align(frame,gray,rects[0]) # align face
             
             grayf = cv2.cvtColor(face_frame, cv2.COLOR_BGR2GRAY)
             rectsf = self.detector(grayf, 0)
@@ -95,7 +95,7 @@ class FaceDetection(object):
                 # mask = np.zeros((face_frame.shape[0], face_frame.shape[1],3),np.uint8)
                 # cv2.fillConvexPoly(mask, shape, 1)
                 
-            #cv2.imshow("face align", face_frame)
+            cv2.imshow("face align", face_frame)
             
             # cv2.rectangle(frame,(shape[54][0], shape[29][1]), #draw rectangle on right and left cheeks
                     # (shape[12][0],shape[54][1]), (0,255,0), 0)

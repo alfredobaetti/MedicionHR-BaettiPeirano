@@ -10,6 +10,8 @@ from sklearn.manifold import SpectralEmbedding
 import time
 from face_detection import FaceDetection
 from process import Process
+import read_json
+import glob
 
 freqs_min = 0.8
 freqs_max = 4
@@ -45,16 +47,19 @@ if __name__ == '__main__':
     HR = []
     heartrate = 0
     camera_code = 0
-    capture = cv.VideoCapture(camera_code)
+    #capture = cv.VideoCapture(camera_code)
     #capture = cv.VideoCapture('pei_cardio.mp4')
-    fps = capture.get(cv.CAP_PROP_FPS)
+    #fps = capture.get(cv.CAP_PROP_FPS)
 
     Process = Process()
     FaceDetection = FaceDetection()
 
-
-    while capture.isOpened():
-        ret, frame = capture.read()
+    TSfr, TShr, HR = read_json.getTS()
+    c=0
+    #while capture.isOpened():
+    for filename in glob.glob('10-01/*.png'):
+        frame = cv.imread(filename)    
+        #ret, frame = capture.read()
 
         Process.frame_in = frame
         Process.run()
@@ -71,9 +76,10 @@ if __name__ == '__main__':
             if(max(Process.bpms-np.mean(Process.bpms))<5): #show HR if it is stable -the change is not over 5 bpm- for 3s
                 heartrate = np.mean(Process.bpms)
 
-        cv.putText(frame, '{:.1f}bps'.format(heartrate), (50, 300), cv.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 2)
+        cv.putText(frame, '{:.1f}bps'.format(heartrate), (450, 50), cv.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 2)
+        cv.putText(frame, '{:.1f}bps'.format(HR[c]), (50, 50), cv.FONT_HERSHEY_SIMPLEX, 1.2, (255, 0, 0), 2)
         cv.imshow('frame', frame)
-
+        c=c+1
         if cv.waitKey(1) & 0xFF == ord('q'):
             break
         
