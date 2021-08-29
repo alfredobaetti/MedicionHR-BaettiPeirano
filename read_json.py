@@ -2,6 +2,7 @@ import json
 import numpy
 import numpy as np
 import math
+import pickle
 
 def find_nearest(array,value):  
     
@@ -17,6 +18,12 @@ def getTS():
     with open("10-01.json") as jsonFile:
         jsonObject = json.load(jsonFile)
         jsonFile.close()
+
+    # with open('px1_full.pkl', 'rb') as f:
+    #     data = pickle.load(f)
+    
+    # v=0
+    
 
     HR = []
     TShr = []

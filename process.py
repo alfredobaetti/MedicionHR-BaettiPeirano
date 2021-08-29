@@ -11,7 +11,7 @@ class Process(object):
         self.frame_ROI = np.zeros((10, 10, 3), np.uint8)
         self.frame_out = np.zeros((10, 10, 3), np.uint8)
         self.samples = []
-        self.buffer_size = 100
+        self.buffer_size = 10
         self.times = [] 
         self.data_buffer = []
         self.fps = 0
@@ -76,22 +76,30 @@ class Process(object):
             self.fps = float(L) / (self.times[-1] - self.times[0])#calculate HR using a true fps of processor of the computer, not the fps the camera provide
             even_times = np.linspace(self.times[0], self.times[-1], L)
             
-            processed = signal.detrend(processed)#detrend the signal to avoid interference of light change
+            """  #processed = signal.detrend(processed)#detrend the signal to avoid interference of light change
             interpolated = np.interp(even_times, self.times, processed) #interpolation by 1
             interpolated = np.hamming(L) * interpolated#make the signal become more periodic (advoid spectral leakage)
             #norm = (interpolated - np.mean(interpolated))/np.std(interpolated)#normalization
             norm = interpolated/np.linalg.norm(interpolated)
             raw = np.fft.rfft(norm*30)#do real fft with the normalization multiplied by 10
-            
+            """
+            ###################################################
+            interpolated = np.interp(even_times, self.times, processed)
+            interpolated = np.hamming(L) * interpolated
+            interpolated = interpolated - np.mean(interpolated)
+            raw = np.fft.rfft(interpolated)
+            ###################################################
+
             self.freqs = float(self.fps) / L * np.arange(L / 2 + 1)
             freqs = 60. * self.freqs
             
             # idx_remove = np.where((freqs < 50) & (freqs > 180))
             # raw[idx_remove] = 0
             
-            self.fft = np.abs(raw)**2#get amplitude spectrum
-        
-            idx = np.where((freqs > 50) & (freqs < 180))#the range of frequency that HR is supposed to be within 
+            #self.fft = np.abs(raw)**2#get amplitude spectrum
+            self.fft = np.abs(raw) #DEL OTRO CÓDIGO
+
+            idx = np.where((freqs > 30) & (freqs < 250))#the range of frequency that HR is supposed to be within 
             pruned = self.fft[idx]
             pfreq = freqs[idx]
             

@@ -48,18 +48,18 @@ if __name__ == '__main__':
     heartrate = 0
     camera_code = 0
     #capture = cv.VideoCapture(camera_code)
-    #capture = cv.VideoCapture('pei_cardio.mp4')
+    capture = cv.VideoCapture('IMG_1604.mp4')
     #fps = capture.get(cv.CAP_PROP_FPS)
 
     Process = Process()
     FaceDetection = FaceDetection()
 
-    TSfr, TShr, HR = read_json.getTS()
+    #TSfr, TShr, HR = read_json.getTS()
     c=0
-    #while capture.isOpened():
-    for filename in glob.glob('10-01/*.png'):
-        frame = cv.imread(filename)    
-        #ret, frame = capture.read()
+    while capture.isOpened():
+    #for filename in glob.glob('01-01/*.png'):
+        #frame = cv.imread(filename)    
+        ret, frame = capture.read()
 
         Process.frame_in = frame
         Process.run()
@@ -77,7 +77,7 @@ if __name__ == '__main__':
                 heartrate = np.mean(Process.bpms)
 
         cv.putText(frame, '{:.1f}bps'.format(heartrate), (450, 50), cv.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 2)
-        cv.putText(frame, '{:.1f}bps'.format(HR[c]), (50, 50), cv.FONT_HERSHEY_SIMPLEX, 1.2, (255, 0, 0), 2)
+        #cv.putText(frame, '{:.1f}bps'.format(HR[c]), (50, 50), cv.FONT_HERSHEY_SIMPLEX, 1.2, (255, 0, 0), 2)
         cv.imshow('frame', frame)
         c=c+1
         if cv.waitKey(1) & 0xFF == ord('q'):
