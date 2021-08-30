@@ -1,8 +1,11 @@
+from hr_calculator import find_heart_rate
+from fft_filter import fft_filter
 import cv2
 import numpy as np
 import time
 from face_detection import FaceDetection
 from scipy import signal
+import scipy.fftpack as fftpack
 # from sklearn.decomposition import FastICA
 
 class Process(object):
@@ -11,7 +14,7 @@ class Process(object):
         self.frame_ROI = np.zeros((10, 10, 3), np.uint8)
         self.frame_out = np.zeros((10, 10, 3), np.uint8)
         self.samples = []
-        self.buffer_size = 10
+        self.buffer_size = 300
         self.times = [] 
         self.data_buffer = []
         self.fps = 0
@@ -31,8 +34,37 @@ class Process(object):
         #b = np.mean(frame[:,:,2])
         #return r, g, b
         return g           
-    
 
+    def fft_filter(self, signal, freq_min, freq_max, fps):
+        fft = fftpack.fft(signal, axis=0)
+        frequencies = fftpack.fftfreq(signal.shape[0], d=1.0 / fps)
+        bound_low = (np.abs(frequencies - freq_min)).argmin()
+        bound_high = (np.abs(frequencies - freq_max)).argmin()
+        fft[:bound_low] = 0
+        fft[bound_high:-bound_high] = 0
+        fft[-bound_low:] = 0
+        return fft, frequencies
+
+    def find_heart_rate(self, fft, freqs, freq_min, freq_max):
+        fft_maximums = []
+
+        for i in range(fft.shape[0]):
+            if freq_min <= freqs[i] <= freq_max:
+                fftMap = abs(fft[i])
+                fft_maximums.append(fftMap.max())
+            else:
+                fft_maximums.append(0)
+
+        peaks, properties = signal.find_peaks(fft_maximums)
+        max_peak = -1
+        max_freq = 0
+
+        for peak in peaks:
+            if fft_maximums[peak] > max_freq:
+                max_freq = fft_maximums[peak]
+                max_peak = peak
+
+        return freqs[max_peak] * 60
         
     def run(self):
         
@@ -84,35 +116,48 @@ class Process(object):
             raw = np.fft.rfft(norm*30)#do real fft with the normalization multiplied by 10
             """
             ###################################################
+            processed = signal.detrend(processed)
             interpolated = np.interp(even_times, self.times, processed)
             interpolated = np.hamming(L) * interpolated
             interpolated = interpolated - np.mean(interpolated)
-            raw = np.fft.rfft(interpolated)
+            #raw = np.fft.rfft(interpolated)
             ###################################################
+            
+            #self.fft = np.abs(raw) #DEL OTRO CÓDIGO
 
-            self.freqs = float(self.fps) / L * np.arange(L / 2 + 1)
-            freqs = 60. * self.freqs
+            fft, freqs = self.fft_filter(interpolated, 0.7, 3.5, self.fps)
+
+            HRate = self.find_heart_rate(fft, freqs, 0.7, 3.5)
+            
+            self.bpm = HRate
+            self.bpms.append(self.bpm)
+
+            #freqs = freqs*60
+
+            #self.freqs = float(self.fps) / L * np.arange(L / 2 + 1)
+            #freqs = 60. * self.freqs
             
             # idx_remove = np.where((freqs < 50) & (freqs > 180))
             # raw[idx_remove] = 0
             
             #self.fft = np.abs(raw)**2#get amplitude spectrum
-            self.fft = np.abs(raw) #DEL OTRO CÓDIGO
+            
 
-            idx = np.where((freqs > 30) & (freqs < 250))#the range of frequency that HR is supposed to be within 
-            pruned = self.fft[idx]
-            pfreq = freqs[idx]
+            # idx = np.where((freqs > 30) & (freqs < 250))#the range of frequency that HR is supposed to be within 
+            # pruned = self.fft[idx]
+            # pfreq = freqs[idx]
             
-            self.freqs = pfreq 
-            self.fft = pruned
+            # self.freqs = pfreq 
+            # self.fft = pruned
             
-            idx2 = np.argmax(pruned)#max in the range can be HR
+            # idx2 = np.argmax(pruned)#max in the range can be HR
             
-            self.bpm = self.freqs[idx2]
-            self.bpms.append(self.bpm)
+            # self.bpm = self.freqs[idx2]
+            # self.bpms.append(self.bpm)
             
             
-            processed = self.butter_bandpass_filter(processed,0.8,3,self.fps,order = 3)
+            
+            # processed = self.butter_bandpass_filter(processed,0.8,3,self.fps,order = 3)
             #ifft = np.fft.irfft(raw)
         self.samples = processed # multiply the signal with 5 for easier to see in the plot
         #TODO: find peaks to draw HR-like signal.
@@ -126,8 +171,8 @@ class Process(object):
             face_frame[mask] = out[mask]
             
             
-        #cv2.imshow("face", face_frame)
-        #out = cv2.add(face_frame,out)
+        cv2.imshow("face", face_frame)
+        out = cv2.add(face_frame,out)
         # else:
             # cv2.imshow("face", face_frame)
     

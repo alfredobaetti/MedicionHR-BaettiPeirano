@@ -48,7 +48,7 @@ if __name__ == '__main__':
     heartrate = 0
     camera_code = 0
     #capture = cv.VideoCapture(camera_code)
-    capture = cv.VideoCapture('IMG_1604.mp4')
+    capture = cv.VideoCapture('pei_cardio.mp4')
     #fps = capture.get(cv.CAP_PROP_FPS)
 
     Process = Process()
